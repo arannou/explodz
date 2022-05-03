@@ -4,7 +4,7 @@ void(function(STEP, PERSPECTIVE) {
 	function getColour(depth) {
 		return COLOURS[depth % (COLOURS.length - 1)]
 	}
-	
+
 	function getFaceHTML(x, y, z, w, h, r, c) {
 		var common = "position:absolute;-webkit-transform-origin: 0 0 0;";
 		var visual = "background:" + c + ";";
@@ -15,27 +15,34 @@ void(function(STEP, PERSPECTIVE) {
 		var div = "<div style='" + common + visual + dimensions + transform + "'></div>";
 		return div;
 	}
-	
+
 	var stepDelta = 0.001, facesHTML = "";
 	function traverse(element, depth, offsetLeft, offsetTop) {
 		var childNodes = element.childNodes, l = childNodes.length;
 		for (var i = 0; i < l; i++) {
 			var childNode = childNodes[i];
 			if (childNode.nodeType === 1) {
-				childNode.style.overflow = 'visible';
-				childNode.style.WebkitTransformStyle = 'preserve-3d';
-				childNode.style.WebkitTransform = 'translateZ(' + (STEP + (l - i) * stepDelta).toFixed(3) + 'px)';
-				
+				if (mode == "DISABLED") {
+					childNode.style.overflow = 'initial';
+					childNode.style.WebkitTransformStyle = 'initial';
+					childNode.style.WebkitTransform = 'initial';
+				} else {
+					childNode.style.WebkitTransformStyle = 'preserve-3d';
+					childNode.style.overflow = 'visible';
+					childNode.style.WebkitTransform = 'translateZ(' + (STEP + (l - i) * stepDelta).toFixed(3) + 'px)';
+				}
+
+
 				var elementBodyOffsetLeft = offsetLeft,
 					elementBodyOffsetTop = offsetTop;
-				
+
 				if (childNode.offsetParent === element) {
 					elementBodyOffsetLeft += element.offsetLeft;
 					elementBodyOffsetTop += element.offsetTop;
 				}
-				
+
 				traverse(childNode, depth + 1, elementBodyOffsetLeft, elementBodyOffsetTop);
-				
+
 				// top
 				facesHTML += getFaceHTML(elementBodyOffsetLeft + childNode.offsetLeft, 
 						elementBodyOffsetTop + childNode.offsetTop, (depth + 1) * STEP,
@@ -55,18 +62,18 @@ void(function(STEP, PERSPECTIVE) {
 			}
 		}
 	}
-	
+
 	var body = document.body;
 	body.style.overflow = 'visible';
 	body.style.WebkitTransformStyle = 'preserve-3d';
 	body.style.WebkitPerspective = PERSPECTIVE;
-	
+
 	var xCenter = (window.innerWidth/2).toFixed(2);
 	var yCenter = (window.innerHeight/2).toFixed(2);
 	body.style.WebkitPerspectiveOrigin = body.style.WebkitTransformOrigin = xCenter + "px " + yCenter +"px";
-	
+
 	traverse(body, 0, 0, 0);
-	
+
 	var faces = document.createElement("DIV");
 	faces.style.display = "none";
 	faces.style.position = "absolute";
@@ -74,8 +81,8 @@ void(function(STEP, PERSPECTIVE) {
 	faces.innerHTML = facesHTML;
 	body.appendChild(faces);
 
-	var mode = "NO_FACES";	
-	document.addEventListener("mousemove", function (e) {
+	var mode = "NO_FACES";
+	function move(e) {
 		if (mode !== "DISABLED") {
 			var xrel = e.screenX / screen.width;
 			var yrel = 1 - (e.screenY / screen.height);
@@ -83,9 +90,9 @@ void(function(STEP, PERSPECTIVE) {
 			var ydeg = (xrel * 360 - 180).toFixed(2);
 			body.style.WebkitTransform = "rotateX(" + xdeg + "deg) rotateY(" + ydeg + "deg)";
 		}
-	}, true);
-	
-	document.addEventListener("mouseup", function (e) {
+	}
+
+	function mouseup(e) {
 		switch (mode) {
 		case "NO_FACES":
 			mode = "FACES";
@@ -96,7 +103,40 @@ void(function(STEP, PERSPECTIVE) {
 			faces.style.display = "none";
 			break;
 		}
-	}, true);
-	
-	
-} (25, 5000)); 
+	}
+
+	function stop(event) {
+		var key = event.code;
+		console.log(key)
+		if (key=="Escape") {
+			mode = "DISABLED";
+			r= false;
+			traverse(d, 0, 0, 0);
+			body.removeChild(f);
+			body.style = w;
+			document.removeEventListener("keydown", function(e) {stop(e)});
+			document.removeEventListener("keyup", function(e) {pause(e)});
+			document.removeEventListener("mousemove", function(b) {move(b)});
+			document.removeEventListener("mouseup", function() {mouseup()});
+		}
+		if (key=="ShiftLeft") {
+			mode = "DISABLED";
+			r= false;
+		}
+	}
+
+	function pause(event) {
+		var key = event.code;
+		if (key=="ShiftLeft") {
+			mode = "NO_FACES";
+			r = true;
+		}
+	}
+
+	document.addEventListener("mousemove", function(b) {move(b)}, !0);
+	document.addEventListener("mouseup", function() {mouseup()}, !0);
+
+	document.addEventListener("keydown", function(e) {stop(e)});
+	document.addEventListener("keyup", function(e) {pause(e)});
+
+} (25, 5000));

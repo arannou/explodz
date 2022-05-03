@@ -1,12 +1,13 @@
-explodz
-====================
+# explodz
 
 A bookmarklet which uses webkit-transform to z-translate each element in the DOM based on it's depth
 
-Works well on these two pages -
+# To configure
 
-http://www.webkit.org/blog/386/3d-transforms/
+Create a bookmark in your favorite browser. In the url field, type "javascript: " and paste the content of explodz.min.js
 
-http://www.chromeexperiments.com/
+# To use
 
-http://dribbble.com/
+While visiting any web page, click on your previously created bookmark. The magic begins !
+Press Escape key to stop animation.
+Press Left shift key to pause/re-run animation
