@@ -2,12 +2,12 @@
 
 A bookmarklet which uses webkit-transform to z-translate each element in the DOM based on it's depth
 
-# To configure
+## To configure
 
 Create a bookmark in your favorite browser. In the url field, type "javascript: " and paste the content of explodz.min.js
 
-# To use
+## To use
 
 While visiting any web page, click on your previously created bookmark. The magic begins !
 Press Escape key to stop animation.
-Press Left shift key to pause/re-run animation
+Hold Left shift key to pause animation
