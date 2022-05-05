@@ -1,27 +1,29 @@
-void(function(STEP, PERSPECTIVE) {
+void(
+	function(STEP, PERSPECTIVE) {
 	var COLOURS = ["#C33", "#ea4c88", "#663399", "#0066cc", "#669900", "#ffcc33", "#ff9900", "#996633"];
 	
 	function getColour(depth) {
 		return COLOURS[depth % (COLOURS.length - 1)]
 	}
 
-	function getFaceHTML(x, y, z, w, h, r, c) {
-		var common = "position:absolute;-webkit-transform-origin: 0 0 0;";
-		var visual = "background:" + c + ";";
-		var dimensions = "width:" + w + "px; height:" + h + "px;";
-		var translate = "translate3d(" + x + "px," + y + "px," + z + "px)";
-		var rotate = "rotateX(" + 270 + "deg) rotateY(" + r + "deg)";
-		var transform = "-webkit-transform:" + translate + rotate + ";"; 
-		var div = "<div style='" + common + visual + dimensions + transform + "'></div>";
+	function getFaceHTML(topOrBottom, leftOrRight, w, h, rX, rY, c) {
+		var common = "transform-origin:" + topOrBottom + " " + leftOrRight +";";
+		var visual = " background:" + c + ";";
+		var dimensions = " width:" + w + "px; height:" + h + "px;";
+        var position = " position:absolute;" + topOrBottom + ":0;" + leftOrRight + ":0;"
+		var rotate = " rotateX(" + rX + "deg) rotateY(" + rY + "deg)";
+		var transform = "transform:" + rotate +";";
+		var div = "<div style='" + common + visual + dimensions + transform + position +"'></div>";
 		return div;
 	}
 
-	var stepDelta = 0.001, facesHTML = "";
+	var stepDelta = 0.001;
 	function traverse(element, depth, offsetLeft, offsetTop) {
 		var childNodes = element.childNodes, l = childNodes.length;
 		for (var i = 0; i < l; i++) {
 			var childNode = childNodes[i];
 			if (childNode.nodeType === 1) {
+                facesHTML = "";
 				if (mode == "DISABLED") {
 					childNode.style.overflow = 'initial';
 					childNode.style.WebkitTransformStyle = 'initial';
@@ -44,21 +46,22 @@ void(function(STEP, PERSPECTIVE) {
 				traverse(childNode, depth + 1, elementBodyOffsetLeft, elementBodyOffsetTop);
 
 				// top
-				facesHTML += getFaceHTML(elementBodyOffsetLeft + childNode.offsetLeft, 
+                facesHTML += getFaceHTML("top", "left", elementBodyOffsetLeft + childNode.offsetLeft,
 						elementBodyOffsetTop + childNode.offsetTop, (depth + 1) * STEP,
-						childNode.offsetWidth, STEP, 0, getColour(depth));
+						childNode.offsetWidth, STEP, 270, 0, getColour(depth));
 				// right
-				facesHTML += getFaceHTML(elementBodyOffsetLeft + childNode.offsetLeft + childNode.offsetWidth, 
+				facesHTML += getFaceHTML("top", "right", elementBodyOffsetLeft + childNode.offsetLeft + childNode.offsetWidth, 
 						elementBodyOffsetTop + childNode.offsetTop, (depth + 1) * STEP,
-						childNode.offsetHeight, STEP, 270, getColour(depth));
+						childNode.offsetHeight, STEP, 270, 90, getColour(depth));
 				// bottom
-				facesHTML += getFaceHTML(elementBodyOffsetLeft + childNode.offsetLeft, 
+				facesHTML += getFaceHTML("bottom", "left", elementBodyOffsetLeft + childNode.offsetLeft,
 						elementBodyOffsetTop + childNode.offsetTop + childNode.offsetHeight, (depth + 1) * STEP,
-						childNode.offsetWidth, STEP, 0, getColour(depth));
+						childNode.offsetWidth, STEP, 90, 0, getColour(depth));
 				// left
-				facesHTML += getFaceHTML(elementBodyOffsetLeft + childNode.offsetLeft, 
+				facesHTML += getFaceHTML("top", "left", elementBodyOffsetLeft + childNode.offsetLeft,
 						elementBodyOffsetTop + childNode.offsetTop, (depth + 1) * STEP,
-						childNode.offsetHeight, STEP, 270, getColour(depth));
+						childNode.offsetHeight, STEP, 270, 270, getColour(depth));
+                childNode.insertAdjacentHTML('beforeend', facesHTML);
 			}
 		}
 	}
@@ -73,13 +76,6 @@ void(function(STEP, PERSPECTIVE) {
 	body.style.WebkitPerspectiveOrigin = body.style.WebkitTransformOrigin = xCenter + "px " + yCenter +"px";
 
 	traverse(body, 0, 0, 0);
-
-	var faces = document.createElement("DIV");
-	faces.style.display = "none";
-	faces.style.position = "absolute";
-	faces.style.top = 0;
-	faces.innerHTML = facesHTML;
-	body.appendChild(faces);
 
 	var mode = "NO_FACES";
 	function move(e) {
