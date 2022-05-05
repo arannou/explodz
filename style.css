@@ -1,9 +1,11 @@
-* {
+.tester article,
+.tester p {
   margin: 1rem;
   padding: 1rem;
+  border: 1px solid black;
 }
 
-div {
+div.tester {
   display: flex;
   flex-direction: column;
 }
