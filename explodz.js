@@ -24,6 +24,18 @@ void(
 			var childNode = childNodes[i];
 			if (childNode.nodeType === 1) {
                 facesHTML = "";
+
+                var elementBodyOffsetLeft = offsetLeft,
+                elementBodyOffsetTop = offsetTop;
+
+                if (childNode.offsetParent === element) {
+                    elementBodyOffsetLeft += element.offsetLeft;
+                    elementBodyOffsetTop += element.offsetTop;
+                }
+
+                traverse(childNode, depth + 1, elementBodyOffsetLeft, elementBodyOffsetTop);
+
+
 				if (mode == "DISABLED") {
 					childNode.style.overflow = 'initial';
 					childNode.style.WebkitTransformStyle = 'initial';
@@ -32,32 +44,22 @@ void(
 					childNode.style.WebkitTransformStyle = 'preserve-3d';
 					childNode.style.overflow = 'visible';
 					childNode.style.WebkitTransform = 'translateZ(' + (STEP + (l - i) * stepDelta).toFixed(3) + 'px)';
-				}
 
-
-				var elementBodyOffsetLeft = offsetLeft,
-					elementBodyOffsetTop = offsetTop;
-
-				if (childNode.offsetParent === element) {
-					elementBodyOffsetLeft += element.offsetLeft;
-					elementBodyOffsetTop += element.offsetTop;
-				}
-
-				traverse(childNode, depth + 1, elementBodyOffsetLeft, elementBodyOffsetTop);
-                color = getColour(depth);
-				// top
-                facesHTML += getFaceHTML("top", "left",
-						childNode.offsetWidth, STEP, 270, 0, color);
-				// right
-				facesHTML += getFaceHTML("top", "right",
-						childNode.offsetHeight, STEP, 270, 90, color);
-				// bottom
-				facesHTML += getFaceHTML("bottom", "left",
-						childNode.offsetWidth, STEP, 90, 0, color);
-				// left
-				facesHTML += getFaceHTML("top", "left",
-						childNode.offsetHeight, STEP, 270, 270, color);
-                childNode.insertAdjacentHTML('beforeend', facesHTML);
+                    color = getColour(depth);
+                    // top
+                    facesHTML += getFaceHTML("top", "left",
+                            childNode.offsetWidth, STEP, 270, 0, color);
+                    // right
+                    facesHTML += getFaceHTML("top", "right",
+                            childNode.offsetHeight, STEP, 270, 90, color);
+                    // bottom
+                    facesHTML += getFaceHTML("bottom", "left",
+                            childNode.offsetWidth, STEP, 90, 0, color);
+                    // left
+                    facesHTML += getFaceHTML("top", "left",
+                            childNode.offsetHeight, STEP, 270, 270, color);
+                    childNode.insertAdjacentHTML('beforeend', facesHTML);
+                }
 			}
 		}
 	}
@@ -71,9 +73,9 @@ void(
 	var yCenter = (window.innerHeight/2).toFixed(2);
 	body.style.WebkitPerspectiveOrigin = body.style.WebkitTransformOrigin = xCenter + "px " + yCenter +"px";
 
+	var mode = "FACES";
 	traverse(body, 0, 0, 0);
 
-	var mode = "FACES";
 	function move(e) {
 		if (mode !== "DISABLED") {
 			var xrel = e.screenX / screen.width;
@@ -85,7 +87,7 @@ void(
 	}
 
 	function mouseup(e) {
-        faces = document.getElementsByClassName("dom3d");
+        let faces = document.getElementsByClassName("dom3d");
 
 		switch (mode) {
 		case "NO_FACES":
@@ -105,30 +107,34 @@ void(
 
 	function stop(event) {
 		var key = event.code;
-		if (key=="Escape") {
+		if (key == "Escape") {
 			mode = "DISABLED";
-			r = false;
 			traverse(body, 0, 0, 0);
-            faces = document.getElementsByClassName("dom3d");
-            for (let f of faces) {
-			    body.removeChild(f);
+
+            let faces = document.getElementsByClassName('dom3d');
+            for (const f of [...faces]) {
+			    f.remove();
             }
+
 			document.removeEventListener("keydown", function(e) {stop(e)});
-			document.removeEventListener("keyup", function(e) {pause(e)});
+			document.removeEventListener("keydown", function(e) {pause(e)});
 			document.removeEventListener("mousemove", function(b) {move(b)});
 			document.removeEventListener("mouseup", function() {mouseup()});
+
+            body.style.overflow = 'initial';
+            body.style.WebkitTransformStyle = 'initial';
+            body.style.WebkitPerspective = 0;
+            body.style.transform = 'initial';
 		}
 	}
 
 	function pause(event) {
 		var key = event.code;
-		if (key=="ShiftLeft") {
+		if (key == "ShiftLeft") {
             if (mode == "NO_FACES") {
                 mode = "DISABLED";
-			    r = false;
             } else {
                 mode = "NO_FACES";
-                r = true;
             }
 		}
 	}

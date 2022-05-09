@@ -10,4 +10,5 @@ Create a bookmark in your favorite browser. In the url field, type "javascript: 
 
 While visiting any web page, click on your previously created bookmark. The magic begins !
 Press Escape key to stop animation.
-Hold Left shift key to pause animation
+Hold Left shift key to pause mouse tracking.
+Left click to hide/show colored sides.
