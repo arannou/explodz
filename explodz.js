@@ -35,7 +35,7 @@ void(
 
 				traverse(childNode, depth + 1, elementBodyOffsetLeft, elementBodyOffsetTop);
 
-				if (mode == "DISABLED") {
+				if (!enable) {
 					childNode.style.overflow = 'initial';
 					childNode.style.WebkitTransformStyle = 'initial';
 					childNode.style.WebkitTransform = 'initial';
@@ -64,7 +64,7 @@ void(
 	}
 
 	function move(e) {
-		if (mode !== "DISABLED") {
+		if (enable) {
 			let xrel = e.screenX / screen.width;
 			let yrel = 1 - (e.screenY / screen.height);
 			let xdeg = (yrel * 360 - 180).toFixed(2);
@@ -76,25 +76,22 @@ void(
 	function mouseup(e) {
 		let faces = document.getElementsByClassName("dom3d");
 
-		switch (mode) {
-		case "NO_FACES":
-			mode = "FACES";
-			for (let f of faces) {
-				f.style.display = "";
-			}
-			break;
-		case "FACES":
-			mode = "NO_FACES";
+		if (showFaces) {
+			showFaces = false;
 			for (let f of faces) {
 				f.style.display = "none";
 			}
-			break;
+		} else {
+			showFaces = true;
+			for (let f of faces) {
+				f.style.display = "";
+			}
 		}
 	}
 
 	function stop(event) {
 		if (event.code == "Escape") {
-			mode = "DISABLED";
+			enable = false;
 			traverse(body, 0, 0, 0);
 
 			let faces = document.getElementsByClassName('dom3d');
@@ -116,11 +113,7 @@ void(
 
 	function pause(event) {
 		if (event.code == "ShiftLeft") {
-			if (mode == "NO_FACES") {
-				mode = "DISABLED";
-			} else {
-				mode = "NO_FACES";
-			}
+			enable = !enable
 		}
 	}
 
@@ -136,7 +129,8 @@ void(
 	let yCenter = (window.innerHeight/2).toFixed(2);
 	body.style.WebkitPerspectiveOrigin = body.style.WebkitTransformOrigin = xCenter + "px " + yCenter +"px";
 
-	let mode = "FACES";
+	let enable = true;
+	let showFaces = true;
 	traverse(body, 0, 0, 0);
 
 	document.addEventListener("mousemove", function(b) {move(b)}, !0);
